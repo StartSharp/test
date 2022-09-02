@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<device host-name="examplehost" leader-name="leaderhost" type="dummy">
+	<riom-configuration ID="1">
+		<IO-board-list>
+			<IO-board type="DI" position="1"/>
+			<IO-board type="DI" position="2"/>
+			<IO-board type="DI" position="3"/>
+			<IO-board type="DI" position="4"/>
+			<IO-board type="DO" position="5"/>
+			<IO-board type="DO" position="6"/>
+			<IO-board type="DO" position="7"/>
+			<IO-board type="AX" position="8"/>
+		</IO-board-list>
+	</riom-configuration>
+	<devip-list>
+		<devip devname="vcu1" ip="10.1.5.242"/>
+		<!--devip devname="vcu2" ip="10.2.1.201"/-->
+		<devip devname="erm1" ip="10.1.5.111"/>
+		<devip devname="boot" ip="10.1.1.110"/>
+	</devip-list>
+	<shminfo size="16384" offset="16128" />
+	<debug-parameter-list>
+		<debug-parameter name="trdp_PD_flag" value="1"/>
+		<debug-parameter name="trdp_MD_flag" value="1"/>
+		<debug-parameter name="task_flag" value="1"/>
+		<debug-parameter name="can_flag" value="1"/>
+	</debug-parameter-list>
+</device>
