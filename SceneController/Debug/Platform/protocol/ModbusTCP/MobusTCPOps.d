@@ -6,7 +6,7 @@ Platform/protocol/ModbusTCP/MobusTCPOps.o: \
  /opt/libmodbus/install/include/modbus/modbus-tcp.h \
  /opt/libmodbus/install/include/modbus/modbus.h \
  /opt/libmodbus/install/include/modbus/modbus-rtu.h \
- /home/tct/eclipse-workspace/SceneController/Common/common.h
+ /home/tct/git/repository/scenectrl/SceneController/Common/common.h
 
 ../Platform/protocol/ModbusTCP/ModbusTCPOps.h:
 
@@ -20,4 +20,4 @@ Platform/protocol/ModbusTCP/MobusTCPOps.o: \
 
 /opt/libmodbus/install/include/modbus/modbus-rtu.h:
 
-/home/tct/eclipse-workspace/SceneController/Common/common.h:
+/home/tct/git/repository/scenectrl/SceneController/Common/common.h:

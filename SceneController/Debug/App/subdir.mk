@@ -17,7 +17,7 @@ OBJS += \
 App/%.o: ../App/%.c App/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	aarch64-linux-gnu-gcc -I"/home/tct/eclipse-workspace/SceneController/Platform" -I/opt/libmodbus/install/include/modbus -I"/home/tct/eclipse-workspace/SceneController/Common" -I"/home/tct/eclipse-workspace/SceneController/App" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	aarch64-linux-gnu-gcc -I"/home/tct/git/repository/scenectrl/SceneController/Platform" -I/opt/libmodbus/install/include/modbus -I"/home/tct/git/repository/scenectrl/SceneController/Common" -I"/home/tct/git/repository/scenectrl/SceneController/App" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

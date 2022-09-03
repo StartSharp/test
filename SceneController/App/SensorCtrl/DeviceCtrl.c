@@ -38,7 +38,7 @@ struct ElementCtrlType{
 	void* pdev;					/*操作句柄*/
 	UINT16 holdtime;			/*持续时间*/
 	void* proConf;				/*指向不同协议的配置参数*/
-	UINT16 ctrlTabLen;			/*123123aeqqwe*/
+	UINT16 ctrlTabLen;			/*控制表长度*/
 	void* ctrlTab;				/*指向控制表*/
 };
 
