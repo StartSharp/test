@@ -76,18 +76,23 @@ int DeviceCtrlInit(void)
 
 	/*与场景元素建立连接并初始化设备*/
 	puts("Init device");
-	struct ModbusTCPConfType* pDevConf = malloc(sizeof(struct ModbusTCPConfType));
-	ElementCtrlTab[0] = malloc(sizeof(struct ElementCtrlType));
+	struct ModbusTCPConfType* pDevConf = malloc(sizeof(struct ModbusTCPConfType)); /*配置后期由xml文件给出*/
+	ElementCtrlTab[0] = malloc(sizeof(struct ElementCtrlType));					   /*数据保存点 部分信息由xml文件给出*/
+
+	/*模拟参数配置*/
 	memcpy(pDevConf->ip, "192.168.2.232", sizeof("192.168.2.232"));
 	pDevConf->port = 8080;
 	pDevConf->slaveID = 1;
+
+	/*初始化协议*/
 	ret = ModbusTCPMasterInit(pDevConf, &(ElementCtrlTab[0]->pdev));
 	if(-1 == ret)
 	{
 		puts("Init error");
 		return ret;
 	}
-	/*等待指令*/
+
+	/*初始化modbus设备为安全态*/
 
 	while(1)
 	{

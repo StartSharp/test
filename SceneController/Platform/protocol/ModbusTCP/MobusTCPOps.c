@@ -34,7 +34,7 @@ int ModbusTCPMasterInit(struct ModbusTCPConfType* ptr, void** pHandler)
 			if(-1 != ret)
 			{
 				printf("Connect to ip = %s port = %d device success!!!\r\n",pConf->ip, pConf->port);
-				/*初始化modbus设备为安全态*/
+
 				*pHandler = pCtx;
 			}
 			else
@@ -67,13 +67,13 @@ int ModbusTCPMasterInit(struct ModbusTCPConfType* ptr, void** pHandler)
 	while(1)
 	{
 //		modbus_read_registers(pCtx, 1000, 20, tab_reg);
-		ret = modbus_write_bit(pCtx, 1, 1);
-		printf("ret = %d\r\n", ret);
-
-		sleep(1);
-		modbus_write_bit(pCtx, 1, 0);
-
-		sleep(1);
+//		ret = modbus_write_bit(pCtx, 1, 1);
+//		printf("ret = %d\r\n", ret);
+//
+//		sleep(1);
+//		modbus_write_bit(pCtx, 1, 0);
+//
+//		sleep(1);
 	}
 	return ret;
 }
