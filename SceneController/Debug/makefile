@@ -43,7 +43,7 @@ main-build: SceneController
 SceneController: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross GCC Linker'
-	aarch64-linux-gnu-gcc -L/opt/libmodbus/install/lib -o "SceneController" $(OBJS) $(USER_OBJS) $(LIBS) -lpthread -lmodbus
+	aarch64-linux-gnu-gcc -L/opt/libmodbus/install/lib -o "SceneController" $(OBJS) $(USER_OBJS) $(LIBS) -lpthread -lmodbus -lrt
 	@echo 'Finished building target: $@'
 	@echo ' '
 

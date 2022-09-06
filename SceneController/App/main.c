@@ -9,6 +9,7 @@
 
 int main(void)
 {
+	puts("--------------ScenenController software--------------"); /* prints !!!Hello World!!! */
 	/*初始化场景元素*/
 	DeviceCtrlInit();
 	/*与平台建立连接*/

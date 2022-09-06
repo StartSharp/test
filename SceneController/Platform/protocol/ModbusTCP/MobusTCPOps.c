@@ -54,27 +54,6 @@ int ModbusTCPMasterInit(struct ModbusTCPConfType* ptr, void** pHandler)
 		fprintf(stderr, "Invalid input ID\n");
 	}
 
-//
-//	sleep(60);
-//	modbus_write_bit(pCtx, 1, 1);
-//
-//	sleep(1);
-//	modbus_write_bit(pCtx, 1, 0);
-//
-//	sleep(1);
-//
-//
-	while(1)
-	{
-//		modbus_read_registers(pCtx, 1000, 20, tab_reg);
-//		ret = modbus_write_bit(pCtx, 1, 1);
-//		printf("ret = %d\r\n", ret);
-//
-//		sleep(1);
-//		modbus_write_bit(pCtx, 1, 0);
-//
-//		sleep(1);
-	}
 	return ret;
 }
 
@@ -99,7 +78,7 @@ int ModbusTCPSetBit(void* pHandler, UINT16 addr, UINT16 state)
 		ret = modbus_write_bit(pCtx, 1, state?1:0);
 		if(-1 != ret)
 		{
-			/**/
+			fprintf(stderr, "modbus operation ok\r\n");
 		}
 		else
 		{
