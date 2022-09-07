@@ -8,59 +8,16 @@
 #include  <stdio.h>
 #include  <stdlib.h>
 #include  <signal.h>
-#include  <time.h>
 #include <errno.h>
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <unistd.h>
 
 #include "DeviceCtrl.h"
-#include "Platform.h"
 
-enum ProtocolType{
-	udp = 1,
-	tcp,
-	modbustcp,
-
-};
-
-struct EleCtrlType{
-	UINT16 inputCmd;			/*平台输入参数*/
-	UINT16 outputCmd;			/*板卡输出参数*/
-};
-
-struct DeviceCtrlType{
-	UINT16 ID;					/*设备操作ID*/
-	char name[20];				/*名称*/
-	enum ProtocolType pro;		/*协议*/
-	void* pdev;					/*操作句柄*/
-	UINT16 holdtime;			/*持续时间 单位s*/
-	void* proConf;				/*指向不同协议的配置参数*/
-	UINT16 ctrlTabLen;			/*控制表长度*/
-	void* ctrlTab;				/*指向控制表*/
-	softTimer_st timer;
-
-	timer_t  timerID;
-
-	STATUS_T (*open)(struct DeviceCtrlType* pHandler);
-	void (*close)(uint16_t argc, void* argv);
-};
-
-/*输入型场景元素采样参数配置*/
-struct RawDataConfType{
-	enum ProtocolType pro;
-
-};
-
-struct ElementReadType{
-	UINT16 ID;					/*场景元素ID*/
-	char name[20];				/*名称*/
-	void* pdata;				/*数据所在的数据源地址*/
-	UINT16 size;				/*数据长度*/
-	UINT16 offset;				/*数据偏移*/
-};
 
 struct DeviceCtrlType* g_deviceCtrlTab[MAX_OUTPUT_ELEMENT_COUNT];
+UINT16 g_acuCnt = 0;
 
 /**
  * @brief      获取系统时间ms
@@ -82,7 +39,36 @@ long long GetSysTimeMS(void)
 }
 
 /**
- * @brief      初始化场景元素
+ * @brief      	查找操作句柄
+ * @details		根据操作ID找到对应的操作句柄
+ * @param		UINT16 id	查找ID
+ * @return     struct ElementCtrlType* 操作句柄
+ *     - RET_NO_ERR  成功
+ *     - ohter       失败
+ */
+struct DeviceCtrlType* GetDeviceHandlerFromID(UINT16 id)
+{
+	UINT16 i = 0;
+	struct DeviceCtrlType* ptr = NULL;
+
+	for(i = 0; i < MAX_OUTPUT_ELEMENT_COUNT; i++)
+	{
+		if(id == g_deviceCtrlTab[i]->ID)
+		{
+			ptr = g_deviceCtrlTab[i];
+			break;
+		}
+		else
+		{
+
+		}
+
+	}
+	return ptr;
+}
+
+/**
+ * @brief      关闭Modbus设备
  * @details
  * @param
  * @return     int  函数执行结果
@@ -121,7 +107,9 @@ STATUS_T OpenModbusDevice(struct DeviceCtrlType* pHandler)
 	printf("Opening device %s\r\n", pHandler->name);
     if(NULL != pHandler->pdev)
     {
-    	ModbusTCPSetBit(pHandler->pdev, 1 , 1);
+    	int result = ModbusTCPSetBit(pHandler->pdev, 1 , 1);
+    	if(-1 != result)
+    		ret = RET_NO_ERR;
     }
     else
     {
@@ -150,7 +138,7 @@ STATUS_T DeviceCtrl(struct DeviceCtrlType* pdevice)
 			/*启动定时器*/
 			softTimer_Start(&pdevice->timer, SOFTTIMER_MODE_ONE_SHOT, pdevice->holdtime, pdevice->close, 1, pdevice);
 		}
-		pdevice->open(pdevice);
+		ret = pdevice->open(pdevice);
 	}
 	else
 	{
@@ -161,16 +149,17 @@ STATUS_T DeviceCtrl(struct DeviceCtrlType* pdevice)
 }
 
 /**
- * @brief     设备层后台服务
+ * @brief     设备层初始化服务
  * @details
  * @param
  * @return     int  函数执行结果
  *     - RET_NO_ERR  成功
  *     - ohter       失败
  */
-void* DeviceCtrlRunDamon(void* arg)
+int DeviceCtrlIint(void)
 {
 	int ret = -1;
+
 	/*读取配置文件*/
 	puts("Read XML"); /* prints !!!Hello World!!! */
 
@@ -193,6 +182,7 @@ void* DeviceCtrlRunDamon(void* arg)
 	g_deviceCtrlTab[0]->close = CloseModbusDevice;
 	g_deviceCtrlTab[0]->pro = modbustcp;
 	g_deviceCtrlTab[0]->proConf = pDevConf;
+	g_acuCnt = 1;
 
 	/*初始化协议*/
 	ret = ModbusTCPMasterInit(pDevConf, &(g_deviceCtrlTab[0]->pdev));
@@ -204,6 +194,19 @@ void* DeviceCtrlRunDamon(void* arg)
 	/*为每个设备定义一个软timer*/
 	softTimer_Init(&g_deviceCtrlTab[0]->timer, 1);
 
+	return ret;
+}
+
+/**
+ * @brief     设备层后台服务
+ * @details
+ * @param
+ * @return     int  函数执行结果
+ *     - RET_NO_ERR  成功
+ *     - ohter       失败
+ */
+void* DeviceCtrlRunDamon(void* arg)
+{
 	while(1)
 	{
 		softTimer_Update(&g_deviceCtrlTab[0]->timer, 1);
