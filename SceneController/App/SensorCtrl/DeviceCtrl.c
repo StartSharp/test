@@ -14,12 +14,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-
+#include "DeviceCtrl.h"
 #include "Platform.h"
-#include "App.h"
-
-#define MAX_OUTPUT_ELEMENT_COUNT	20
-#define MAX_INPUT_ELEMENT_COUNT	20
 
 enum ProtocolType{
 	udp = 1,
@@ -33,8 +29,8 @@ struct EleCtrlType{
 	UINT16 outputCmd;			/*板卡输出参数*/
 };
 
-struct ElementCtrlType{
-	UINT16 ID;					/*场景元素ID*/
+struct DeviceCtrlType{
+	UINT16 ID;					/*设备操作ID*/
 	char name[20];				/*名称*/
 	enum ProtocolType pro;		/*协议*/
 	void* pdev;					/*操作句柄*/
@@ -42,11 +38,12 @@ struct ElementCtrlType{
 	void* proConf;				/*指向不同协议的配置参数*/
 	UINT16 ctrlTabLen;			/*控制表长度*/
 	void* ctrlTab;				/*指向控制表*/
+	softTimer_st timer;
 
 	timer_t  timerID;
 
-	STATUS_T (*open)(struct ElementCtrlType* pdev);
-	void (*close)(sigval_t signal);
+	STATUS_T (*open)(struct DeviceCtrlType* pHandler);
+	void (*close)(uint16_t argc, void* argv);
 };
 
 /*输入型场景元素采样参数配置*/
@@ -63,7 +60,7 @@ struct ElementReadType{
 	UINT16 offset;				/*数据偏移*/
 };
 
-struct ElementCtrlType* ElementCtrlTab[MAX_OUTPUT_ELEMENT_COUNT];
+struct DeviceCtrlType* g_deviceCtrlTab[MAX_OUTPUT_ELEMENT_COUNT];
 
 /**
  * @brief      获取系统时间ms
@@ -92,19 +89,22 @@ long long GetSysTimeMS(void)
  *     - RET_NO_ERR  成功
  *     - ohter       失败
  */
-static void CloseModbusDevice(sigval_t signal)
+void CloseModbusDevice(uint16_t argc, void* argv)
 {
-	ModbusTCPSetBit(ElementCtrlTab[0]->pdev, 1 , 1);
-//	printf("%d\r\n", signal.sival_int);
+	struct DeviceCtrlType* pHandler = (struct DeviceCtrlType*)argv;
+
+	printf("Closing device %s\r\n", pHandler->name);
+
+    if(NULL != pHandler->pdev)
+    {
+    	ModbusTCPSetBit(pHandler->pdev, 1 , 0);
+    }
+    else
+    {
+    	printf("Device handler is not initialed\r\n");
+    }
 }
-void timer_handler(union sigval sig)
 
-{
-
-       printf("signal_handler\n");
-
-
-}
 /**
  * @brief      打开Modbus设备
  * @details
@@ -113,57 +113,62 @@ void timer_handler(union sigval sig)
  *     - RET_NO_ERR  成功
  *     - ohter       失败
  */
-static STATUS_T OpenModbusDevice(struct ElementCtrlType* pdevice)
+STATUS_T OpenModbusDevice(struct DeviceCtrlType* pHandler)
 {
 	STATUS_T ret = RET_UNKNOWN_ERR;
 
-    clockid_t clockid=CLOCK_REALTIME;
-    struct sigevent sev;
-
-    sev.sigev_notify = SIGEV_THREAD;
-    sev.sigev_signo = SIGRTMAX;
-    sev.sigev_value.sival_ptr=&pdevice->timerID ;
-    sev.sigev_notify_function = pdevice->close;//设置定时器回调
-
-    /*创建定时器*/
-    timer_create(clockid, &sev, &pdevice->timerID);
-    printf("timer ID = %ld\r\n", *(long int*)pdevice->timerID);
-
-    int flags = 0;
-
-    struct itimerspec new_value;
-    new_value.it_value.tv_sec = pdevice->holdtime;
-    new_value.it_value.tv_nsec = 0;
-    new_value.it_interval.tv_sec = 0;
-    new_value.it_interval.tv_nsec = 0;
-
-    /*启动定时器*/
-    timer_settime(pdevice->timerID, flags, &new_value, NULL);
-
     /*打开modbus设备*/
-	printf("Open device %s\r\n", pdevice->name);
-	puts("Open device ");
-	ModbusTCPSetBit(ElementCtrlTab[0]->pdev, 1 , 1);
-
-	sleep(1);
-	puts("Close device ");
-	ModbusTCPSetBit(ElementCtrlTab[0]->pdev, 1 , 0);
-
-	sleep(1);
+	printf("Opening device %s\r\n", pHandler->name);
+    if(NULL != pHandler->pdev)
+    {
+    	ModbusTCPSetBit(pHandler->pdev, 1 , 1);
+    }
+    else
+    {
+    	printf("Device handler is not initialed\r\n");
+    }
 
     return ret;
 }
 
-
 /**
- * @brief      初始化场景元素
+ * @brief      设备层控制
  * @details
  * @param
  * @return     int  函数执行结果
  *     - RET_NO_ERR  成功
  *     - ohter       失败
  */
-int DeviceCtrlInit(void)
+STATUS_T DeviceCtrl(struct DeviceCtrlType* pdevice)
+{
+	STATUS_T ret = RET_UNKNOWN_ERR;
+
+	if(NULL != pdevice)
+	{
+		if(0 != pdevice->holdtime)
+		{
+			/*启动定时器*/
+			softTimer_Start(&pdevice->timer, SOFTTIMER_MODE_ONE_SHOT, pdevice->holdtime, pdevice->close, 1, pdevice);
+		}
+		pdevice->open(pdevice);
+	}
+	else
+	{
+		ret = RET_PARAM_ERR;
+	}
+
+	return ret;
+}
+
+/**
+ * @brief     设备层后台服务
+ * @details
+ * @param
+ * @return     int  函数执行结果
+ *     - RET_NO_ERR  成功
+ *     - ohter       失败
+ */
+void* DeviceCtrlRunDamon(void* arg)
 {
 	int ret = -1;
 	/*读取配置文件*/
@@ -174,43 +179,39 @@ int DeviceCtrlInit(void)
 	/*与场景元素建立连接并初始化设备*/
 	puts("Init device");
 	struct ModbusTCPConfType* pDevConf = malloc(sizeof(struct ModbusTCPConfType)); /*配置后期由xml文件给出*/
-	ElementCtrlTab[0] = malloc(sizeof(struct ElementCtrlType));					   /*数据保存点 部分信息由xml文件给出*/
+	g_deviceCtrlTab[0] = malloc(sizeof(struct DeviceCtrlType));					   /*数据保存点 部分信息由xml文件给出*/
 
 	/*模拟参数配置*/
 	memcpy(pDevConf->ip, "192.168.2.232", sizeof("192.168.2.232"));
 	pDevConf->port = 8080;
 	pDevConf->slaveID = 1;
-	ElementCtrlTab[0]->holdtime = 10;
-	ElementCtrlTab[0]->open = OpenModbusDevice;
-	ElementCtrlTab[0]->close = CloseModbusDevice;
+
+	strcpy(g_deviceCtrlTab[0]->name, "DO1");
+	g_deviceCtrlTab[0]->ID = 0;
+	g_deviceCtrlTab[0]->holdtime = 300;
+	g_deviceCtrlTab[0]->open = OpenModbusDevice;
+	g_deviceCtrlTab[0]->close = CloseModbusDevice;
+	g_deviceCtrlTab[0]->pro = modbustcp;
+	g_deviceCtrlTab[0]->proConf = pDevConf;
 
 	/*初始化协议*/
-	ret = ModbusTCPMasterInit(pDevConf, &(ElementCtrlTab[0]->pdev));
+	ret = ModbusTCPMasterInit(pDevConf, &(g_deviceCtrlTab[0]->pdev));
 	if(-1 == ret)
 	{
 		puts("Init error");
-		return ret;
 	}
 
-//	ElementCtrlTab[0]->open(ElementCtrlTab[0]);
+	/*为每个设备定义一个软timer*/
+	softTimer_Init(&g_deviceCtrlTab[0]->timer, 1);
 
-	OpenModbusDevice(ElementCtrlTab[0]);
-	/*初始化modbus设备为安全态*/
 	while(1)
 	{
-//		puts("Open device ");
-//		ModbusTCPSetBit(ElementCtrlTab[0]->pdev, 1 , 1);
-//
-//		sleep(1);
-//		puts("Close device ");
-//		ModbusTCPSetBit(ElementCtrlTab[0]->pdev, 1 , 0);
-//
-//		sleep(1);
+		softTimer_Update(&g_deviceCtrlTab[0]->timer, 1);
 
+		sleep(1);
 	}
 
-
-	return EXIT_SUCCESS;
+	return NULL;
 }
 
 

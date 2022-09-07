@@ -16,5 +16,6 @@ SUBDIRS := \
 App/SensorCtrl \
 App \
 Platform/AddXML \
+Platform/Softtimer \
 Platform/protocol/ModbusTCP \
 

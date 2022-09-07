@@ -4,13 +4,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../App/SensorCtrl/DeviceCtrl.c 
+../App/SensorCtrl/DeviceCtrl.c \
+../App/SensorCtrl/SceneElement.c 
 
 C_DEPS += \
-./App/SensorCtrl/DeviceCtrl.d 
+./App/SensorCtrl/DeviceCtrl.d \
+./App/SensorCtrl/SceneElement.d 
 
 OBJS += \
-./App/SensorCtrl/DeviceCtrl.o 
+./App/SensorCtrl/DeviceCtrl.o \
+./App/SensorCtrl/SceneElement.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -25,7 +28,7 @@ App/SensorCtrl/%.o: ../App/SensorCtrl/%.c App/SensorCtrl/subdir.mk
 clean: clean-App-2f-SensorCtrl
 
 clean-App-2f-SensorCtrl:
-	-$(RM) ./App/SensorCtrl/DeviceCtrl.d ./App/SensorCtrl/DeviceCtrl.o
+	-$(RM) ./App/SensorCtrl/DeviceCtrl.d ./App/SensorCtrl/DeviceCtrl.o ./App/SensorCtrl/SceneElement.d ./App/SensorCtrl/SceneElement.o
 
 .PHONY: clean-App-2f-SensorCtrl
 
