@@ -83,7 +83,7 @@ void CloseModbusDevice(uint16_t argc, void* argv)
 
     if(NULL != pHandler->pdev)
     {
-    	ModbusTCPSetBit(pHandler->pdev, 1 , 0);
+    	ModbusTCPSetBit(pHandler->pdev, ((struct ModbusTCPConfType*)pHandler->proConf)->addr , 0);
     }
     else
     {
@@ -107,7 +107,7 @@ STATUS_T OpenModbusDevice(struct DeviceCtrlType* pHandler)
 	printf("Opening device %s\r\n", pHandler->name);
     if(NULL != pHandler->pdev)
     {
-    	int result = ModbusTCPSetBit(pHandler->pdev, 1 , 1);
+    	int result = ModbusTCPSetBit(pHandler->pdev, ((struct ModbusTCPConfType*)pHandler->proConf)->addr , 1);
     	if(-1 != result)
     		ret = RET_NO_ERR;
     }
@@ -174,26 +174,45 @@ int DeviceCtrlIint(void)
 	memcpy(pDevConf->ip, "192.168.2.232", sizeof("192.168.2.232"));
 	pDevConf->port = 8080;
 	pDevConf->slaveID = 1;
+	pDevConf->addr = 2;
 
-	strcpy(g_deviceCtrlTab[0]->name, "DO1");
+	strcpy(g_deviceCtrlTab[0]->name, "DO3");
 	g_deviceCtrlTab[0]->ID = 0;
-	g_deviceCtrlTab[0]->holdtime = 300;
+	g_deviceCtrlTab[0]->holdtime = 500;
 	g_deviceCtrlTab[0]->open = OpenModbusDevice;
 	g_deviceCtrlTab[0]->close = CloseModbusDevice;
 	g_deviceCtrlTab[0]->pro = modbustcp;
 	g_deviceCtrlTab[0]->proConf = pDevConf;
-	g_acuCnt = 1;
+
+	pDevConf = malloc(sizeof(struct ModbusTCPConfType)); /*配置后期由xml文件给出*/
+	g_deviceCtrlTab[1] = malloc(sizeof(struct DeviceCtrlType));					   /*数据保存点 部分信息由xml文件给出*/
+	memcpy(pDevConf->ip, "192.168.2.232", sizeof("192.168.2.232"));
+	pDevConf->port = 8080;
+	pDevConf->slaveID = 1;
+	pDevConf->addr = 3;
+	strcpy(g_deviceCtrlTab[1]->name, "DO4");
+	g_deviceCtrlTab[1]->ID = 1;
+	g_deviceCtrlTab[1]->holdtime = 500;
+	g_deviceCtrlTab[1]->open = OpenModbusDevice;
+	g_deviceCtrlTab[1]->close = CloseModbusDevice;
+	g_deviceCtrlTab[1]->pro = modbustcp;
+	g_deviceCtrlTab[1]->proConf = pDevConf;
+	g_acuCnt = 2;
 
 	/*初始化协议*/
-	ret = ModbusTCPMasterInit(pDevConf, &(g_deviceCtrlTab[0]->pdev));
+	ret = ModbusTCPMasterInit(pDevConf, &g_deviceCtrlTab[0]->pdev);
 	if(-1 == ret)
 	{
 		puts("Init error");
 	}
+	g_deviceCtrlTab[1]->pdev = g_deviceCtrlTab[0]->pdev;
 
 	/*为每个设备定义一个软timer*/
 	softTimer_Init(&g_deviceCtrlTab[0]->timer, 1);
+	/*为每个设备定义一个软timer*/
+	softTimer_Init(&g_deviceCtrlTab[1]->timer, 1);
 
+	sleep(5);
 	return ret;
 }
 
@@ -210,6 +229,7 @@ void* DeviceCtrlRunDamon(void* arg)
 	while(1)
 	{
 		softTimer_Update(&g_deviceCtrlTab[0]->timer, 1);
+		softTimer_Update(&g_deviceCtrlTab[1]->timer, 1);
 
 		sleep(1);
 	}

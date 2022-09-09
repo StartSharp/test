@@ -75,7 +75,7 @@ int ModbusTCPSetBit(void* pHandler, UINT16 addr, UINT16 state)
 	if(NULL != pCtx)
 	{
 		/*控制线圈*/
-		ret = modbus_write_bit(pCtx, 1, state?1:0);
+		ret = modbus_write_bit(pCtx, addr, state?1:0);
 		if(-1 != ret)
 		{
 			fprintf(stderr, "modbus operation ok\r\n");

@@ -10,7 +10,10 @@
 
 #include "common.h"
 
-
+enum RESET_MODE_TYPE{
+	RESET_ALL,
+	RESET_ANYONE,
+};
 /**
  * @brief     设备层后台服务
  * @details
@@ -30,5 +33,16 @@ void* TempCtrl(void* arg);
  *     - ohter       失败
  */
 STATUS_T SceneElementInit(void);
+
+/**
+ * @brief     场景元素导向安全操作
+ * @details	  通过解析预设命令控制场景元素导向安全
+ * @param     UINT16 id   场景元素ID
+ * 			  enum RESET_MODE_TYPE mode   可选择全部初始化或某个初始化，若选择全部初始化id无意义
+ * @return     int  函数执行结果
+ *     - RET_NO_ERR  成功
+ *     - ohter       失败
+ */
+STATUS_T SceneElementReset(enum RESET_MODE_TYPE mode, UINT16 id);
 
 #endif /* APP_SENSORCTRL_SCENEELEMENT_H_ */

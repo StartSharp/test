@@ -16,7 +16,16 @@ struct ModbusTCPConfType{
 	UINT16 port;
 	UINT16 slaveID;
 	UINT16 initSta;
+	UINT16 addr;
+	UINT16 data;
 };
+
+//struct ModbusTCPConfType{
+//	char ip[20];
+//	UINT16 port;
+//	UINT16 slaveID;
+//	UINT16
+//};
 
 /**
  * @brief      modbusTCP线圈写入

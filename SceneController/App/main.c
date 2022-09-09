@@ -20,7 +20,7 @@ struct SoftVersionUnionType{
 	UINT32 all;
 };
 
-struct SoftVersionUnionType g_softversion = {{1,2,3,4}};
+struct SoftVersionUnionType g_softversion = {{2,2,3,4}};
 
 pthread_t deviceRun;
 pthread_t cmdRun;
@@ -33,6 +33,9 @@ int main(void)
 	/*与平台建立连接*/
 
 	/*启动线程 自检线程 场景元素报备 场景元素命令解析*/
+
+	printf("Initial Scene Element\r\n");
+	SceneElementReset(RESET_ALL, 0);
 
 	pthread_create(&deviceRun, NULL, DeviceCtrlRunDamon, NULL);
 	pthread_create(&cmdRun, NULL, TempCtrl, NULL);
