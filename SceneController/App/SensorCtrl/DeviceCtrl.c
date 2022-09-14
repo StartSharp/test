@@ -12,13 +12,19 @@
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "DeviceCtrl.h"
-
+#include "Platform.h"
 
 struct DeviceCtrlType* g_deviceCtrlTab[MAX_OUTPUT_ELEMENT_COUNT];
-UINT16 g_acuCnt = 0;
+UINT16 g_acuCtrlCnt = 0;
 
+struct DeviceSampleType* g_deviceSampleTab[MAX_INPUT_ELEMENT_COUNT];
+UINT16 g_acuSampleCnt = 0;
+
+struct InputDataGroupType* g_inputDataGroup[MAX_INPUT_GROUP_COUNT];
+UINT16 g_acuGroupCnt = 1;
 /**
  * @brief      获取系统时间ms
  * @details
@@ -99,10 +105,10 @@ void CloseModbusDevice(uint16_t argc, void* argv)
  *     - RET_NO_ERR  成功
  *     - ohter       失败
  */
-STATUS_T OpenModbusDevice(struct DeviceCtrlType* pHandler)
+STATUS_T OpenModbusDevice(void* ptr)
 {
 	STATUS_T ret = RET_UNKNOWN_ERR;
-
+	struct DeviceCtrlType* pHandler = ptr;
     /*打开modbus设备*/
 	printf("Opening device %s\r\n", pHandler->name);
     if(NULL != pHandler->pdev)
@@ -149,7 +155,7 @@ STATUS_T DeviceCtrl(struct DeviceCtrlType* pdevice)
 }
 
 /**
- * @brief     设备层初始化服务
+ * @brief     设备层控制初始化服务
  * @details
  * @param
  * @return     int  函数执行结果
@@ -179,6 +185,7 @@ int DeviceCtrlIint(void)
 	strcpy(g_deviceCtrlTab[0]->name, "DO3");
 	g_deviceCtrlTab[0]->ID = 0;
 	g_deviceCtrlTab[0]->holdtime = 500;
+	g_deviceCtrlTab[0]->init = ModbusTCPMasterInit;
 	g_deviceCtrlTab[0]->open = OpenModbusDevice;
 	g_deviceCtrlTab[0]->close = CloseModbusDevice;
 	g_deviceCtrlTab[0]->pro = modbustcp;
@@ -193,14 +200,15 @@ int DeviceCtrlIint(void)
 	strcpy(g_deviceCtrlTab[1]->name, "DO4");
 	g_deviceCtrlTab[1]->ID = 1;
 	g_deviceCtrlTab[1]->holdtime = 500;
+	g_deviceCtrlTab[1]->init = ModbusTCPMasterInit;
 	g_deviceCtrlTab[1]->open = OpenModbusDevice;
 	g_deviceCtrlTab[1]->close = CloseModbusDevice;
 	g_deviceCtrlTab[1]->pro = modbustcp;
 	g_deviceCtrlTab[1]->proConf = pDevConf;
-	g_acuCnt = 2;
+	g_acuCtrlCnt = 2;
 
 	/*初始化协议*/
-	ret = ModbusTCPMasterInit(pDevConf, &g_deviceCtrlTab[0]->pdev);
+	ret = g_deviceCtrlTab[0]->init((void*)pDevConf, &g_deviceCtrlTab[0]->pdev);
 	if(-1 == ret)
 	{
 		puts("Init error");
@@ -214,6 +222,90 @@ int DeviceCtrlIint(void)
 
 	sleep(5);
 	return ret;
+}
+
+/**
+ * @brief     获取采样组对应的操作句柄
+ * @details
+ * @param		UINT16 id	组别ID
+ * @return     int  函数执行结果
+ *     - RET_NO_ERR  成功
+ *     - ohter       失败
+ */
+struct InputDataGroupType* GetGroupHandler(UINT16 id)
+{
+	struct InputDataGroupType* pHandler;
+	UINT16 i;
+
+	for(i = 0; i < g_acuGroupCnt; i++)
+	{
+		if(id == g_inputDataGroup[i]->groupID)
+		{
+			pHandler = g_inputDataGroup[i];
+		}
+	}
+
+	return pHandler;
+}
+
+/**
+ * @brief     设备层采样服务初始化
+ * @details
+ * @param
+ * @return     int  函数执行结果
+ *     - RET_NO_ERR  成功
+ *     - ohter       失败
+ */
+STATUS_T DeviceCtrlSampleInit(void)
+{
+	STATUS_T ret = RET_UNKNOWN_ERR;
+	/*从配置文件中读取配置*/
+	g_inputDataGroup[0] = malloc(sizeof(struct InputDataGroupType));
+	/*xml读取*/
+	g_inputDataGroup[0]->groupID = 0;
+	g_inputDataGroup[0]->datasize = 1024;
+	strcpy(g_inputDataGroup[0]->name, "TIDS采样");
+	g_inputDataGroup[0]->pro = udp;
+
+	/*数据存放地址*/
+	g_inputDataGroup[0]->pBuf = malloc(g_inputDataGroup[0]->datasize);
+	switch(g_inputDataGroup[0]->pro)
+	{
+	case udp:
+		g_inputDataGroup[0]->initConf = malloc(sizeof(struct InputDataGroupType));
+		strcpy(((struct UDPSampleGroupType*)g_inputDataGroup[0]->initConf)->ip, "192.168.2.102");
+		((struct UDPSampleGroupType*)g_inputDataGroup[0]->initConf)->port = 8800;
+		g_inputDataGroup[0]->init = UDPInit;
+		g_inputDataGroup[0]->resvDamon = UDPGroupSampleDamon;
+		break;
+	default:
+		break;
+	}
+
+	/*UDP采样 Group建立连接*/
+	int result = g_inputDataGroup[0]->init((void*)g_inputDataGroup[0]->initConf);
+	if(0 == result)
+	{
+		ret = RET_NO_ERR;
+	}
+
+	return ret;
+}
+
+/**
+ * @brief     设备层采样服务
+ * @details
+ * @param
+ * @return     int  函数执行结果
+ *     - RET_NO_ERR  成功
+ *     - ohter       失败
+ */
+void* DeviceCtrlSampleDamon(void* arg)
+{
+	/*数据采样到Group*/
+	pthread_create(&g_inputDataGroup[0]->pthread, NULL, g_inputDataGroup[0]->resvDamon, &g_inputDataGroup[0]->initConf);
+
+	return NULL;
 }
 
 /**

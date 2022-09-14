@@ -8,6 +8,7 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include Platform/protocol/UDP/subdir.mk
 -include Platform/protocol/ModbusTCP/subdir.mk
 -include Platform/Softtimer/subdir.mk
 -include Platform/AddXML/subdir.mk

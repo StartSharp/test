@@ -15,7 +15,7 @@
  *     - RET_NO_ERR  成功
  *     - ohter       失败
  */
-int ModbusTCPMasterInit(struct ModbusTCPConfType* ptr, void** pHandler)
+int ModbusTCPMasterInit(void* ptr, void** pHandler)
 {
 	struct ModbusTCPConfType* pConf = ptr;
 	modbus_t* pCtx;

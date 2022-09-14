@@ -11,9 +11,11 @@
 #include "common.h"
 #include  <time.h>
 #include "Platform.h"
+#include <sys/time.h>
 
 #define MAX_OUTPUT_ELEMENT_COUNT	20
 #define MAX_INPUT_ELEMENT_COUNT	20
+#define MAX_INPUT_GROUP_COUNT	20
 
 enum ProtocolType{
 	udp = 1,
@@ -36,7 +38,8 @@ struct DeviceCtrlType{
 	void* proConf;				/*指向不同协议的配置参数*/
 	softTimer_st timer;
 
-	STATUS_T (*open)(struct DeviceCtrlType* pHandler);
+	int (*init)(void* ptr, void** pHandler);
+	STATUS_T (*open)(void* pHandler);
 	void (*close)(UINT16 argc, void* argv);
 };
 
@@ -51,8 +54,14 @@ struct InputDataGroupType{
 	char name[20];				/*名称 xml文件读取*/
 	enum ProtocolType pro;		/*通信协议 xml文件读取*/
 	void* initConf;				/*初始化配置 xml文件读取*/
-	void* handler;				/*操作句柄   自动生成*/
+	char* pBuf;					/*buffer地址*/
+	struct timeval stampus;		/*采样时间戳us*/
 	UINT32 datasize;			/*数据长度 xml文件读取*/
+	pthread_t pthread;			/*线程ID*/
+
+	int (*init)(void* ptr);
+	void* (*resvDamon)(void* arg);
+
 };
 
 extern struct DeviceCtrlType* g_deviceCtrlTab[MAX_OUTPUT_ELEMENT_COUNT];
@@ -96,5 +105,35 @@ void* DeviceCtrlRunDamon(void* arg);
  *     - ohter       失败
  */
 int DeviceCtrlIint(void);
+
+/**
+ * @brief     设备层采样服务
+ * @details
+ * @param
+ * @return     int  函数执行结果
+ *     - RET_NO_ERR  成功
+ *     - ohter       失败
+ */
+void* DeviceCtrlSampleDamon(void* arg);
+
+/**
+ * @brief     设备层采样服务初始化
+ * @details
+ * @param
+ * @return     int  函数执行结果
+ *     - RET_NO_ERR  成功
+ *     - ohter       失败
+ */
+STATUS_T DeviceCtrlSampleInit(void);
+
+/**
+ * @brief     获取采样组对应的操作句柄
+ * @details
+ * @param		UINT16 id	组别ID
+ * @return     int  函数执行结果
+ *     - RET_NO_ERR  成功
+ *     - ohter       失败
+ */
+struct InputDataGroupType* GetGroupHandler(UINT16 id);
 
 #endif /* APP_SENSORCTRL_DEVICECTRL_H_ */

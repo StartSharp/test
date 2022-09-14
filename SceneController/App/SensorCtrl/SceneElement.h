@@ -45,4 +45,14 @@ STATUS_T SceneElementInit(void);
  */
 STATUS_T SceneElementReset(enum RESET_MODE_TYPE mode, UINT16 id);
 
+/**
+ * @brief     场景元素初始化
+ * @details	  通过解析控制命令决定
+ * @param     void* arg		操作句柄
+ * @return     int  函数执行结果
+ *     - RET_NO_ERR  成功
+ *     - ohter       失败
+ */
+STATUS_T SceneElementSamplerInit(void);
+
 #endif /* APP_SENSORCTRL_SCENEELEMENT_H_ */

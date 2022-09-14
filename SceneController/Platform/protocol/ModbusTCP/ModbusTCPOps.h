@@ -48,5 +48,5 @@ int ModbusTCPSetBit(void* pHandler, UINT16 addr, UINT16 state);
  *     - ohter       失败
  */
 
-int ModbusTCPMasterInit(struct ModbusTCPConfType* ptr, void** pHandler);
+int ModbusTCPMasterInit(void* ptr, void** pHandler);
 #endif /* PLATFORM_PROTOCOL_MODBUSTCP_MODBUSTCPOPS_H_ */

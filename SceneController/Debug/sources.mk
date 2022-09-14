@@ -18,4 +18,5 @@ App \
 Platform/AddXML \
 Platform/Softtimer \
 Platform/protocol/ModbusTCP \
+Platform/protocol/UDP \
 

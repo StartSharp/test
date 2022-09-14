@@ -10,7 +10,8 @@ App/SensorCtrl/SceneElement.o: ../App/SensorCtrl/SceneElement.c \
  /opt/libmodbus/install/include/modbus/modbus.h \
  /opt/libmodbus/install/include/modbus/modbus-rtu.h \
  /home/tct/git/repository/scenectrl/SceneController/Platform/AddXML/DeviceConf.h \
- /home/tct/git/repository/scenectrl/SceneController/Platform/Softtimer/softtime.h
+ /home/tct/git/repository/scenectrl/SceneController/Platform/Softtimer/softtime.h \
+ /home/tct/git/repository/scenectrl/SceneController/Platform/protocol/UDP/udp.h
 
 ../App/SensorCtrl/SceneElement.h:
 
@@ -35,3 +36,5 @@ App/SensorCtrl/SceneElement.o: ../App/SensorCtrl/SceneElement.c \
 /home/tct/git/repository/scenectrl/SceneController/Platform/AddXML/DeviceConf.h:
 
 /home/tct/git/repository/scenectrl/SceneController/Platform/Softtimer/softtime.h:
+
+/home/tct/git/repository/scenectrl/SceneController/Platform/protocol/UDP/udp.h:
