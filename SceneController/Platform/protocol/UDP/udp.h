@@ -8,7 +8,7 @@
 #ifndef PLATFORM_PROTOCOL_UDP_UDP_H_
 #define PLATFORM_PROTOCOL_UDP_UDP_H_
 
-#include "common.h"
+#include <commontypes.h>
 
 struct UDPSampleGroupType{
 	char ip[20];

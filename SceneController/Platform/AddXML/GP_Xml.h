@@ -30,9 +30,9 @@
  * INCLUDES
  */
 
+#include <commontypes.h>
 #include <stdio.h>
 
-#include "common.h"
 
 
 /*******************************************************************************

@@ -8,7 +8,7 @@
 #ifndef APP_ADDXML_DEVICECONF_H_
 #define APP_ADDXML_DEVICECONF_H_
 
-#include "common.h"
+#include <commontypes.h>
 
 /**
  * @brief      配置初始化函数

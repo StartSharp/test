@@ -40,6 +40,16 @@ extern "C"
 #define ERROR (-1)
 #endif
 
+#define ALIGN(n)  __attribute__((packed, aligned(n)))
+#define LITTLE_ENDIAN_SQUENCE
+/* ERROR FIELD */
+#define OPEROK      0
+#define EINPUT      1
+#define EQUEUE      2
+#define ECOUNT      3
+#define EQUEST      4
+#define EFRAME      5
+
 typedef char                CHAR;
 typedef unsigned char       UCHAR;
 typedef signed char         INT8;

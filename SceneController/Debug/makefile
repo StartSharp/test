@@ -9,10 +9,13 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include Platform/protocol/UDP/subdir.mk
+-include Platform/protocol/TCP/subdir.mk
 -include Platform/protocol/ModbusTCP/subdir.mk
 -include Platform/Softtimer/subdir.mk
 -include Platform/AddXML/subdir.mk
+-include Common/subdir.mk
 -include App/SensorCtrl/subdir.mk
+-include App/CommandResolve/subdir.mk
 -include App/subdir.mk
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C_DEPS)),)

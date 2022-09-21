@@ -8,7 +8,7 @@
 #ifndef APP_SENSORCTRL_DEVICECTRL_H_
 #define APP_SENSORCTRL_DEVICECTRL_H_
 
-#include "common.h"
+#include <commontypes.h>
 #include  <time.h>
 #include "Platform.h"
 #include <sys/time.h>
@@ -39,7 +39,7 @@ struct DeviceCtrlType{
 	softTimer_st timer;
 
 	int (*init)(void* ptr, void** pHandler);
-	STATUS_T (*open)(void* pHandler);
+	STATUS_T (*open)(void* pHandler, UINT32 para);
 	void (*close)(UINT16 argc, void* argv);
 };
 
@@ -84,7 +84,7 @@ struct DeviceCtrlType* GetDeviceHandlerFromID(UINT16 id);
  *     - RET_NO_ERR  成功
  *     - ohter       失败
  */
-STATUS_T DeviceCtrl(struct DeviceCtrlType* pdevice);
+STATUS_T DeviceCtrl(struct DeviceCtrlType* pdevice, UINT32 para);
 
 /**
  * @brief      初始化场景元素

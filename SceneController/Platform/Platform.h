@@ -13,5 +13,6 @@
 #include "AddXML/DeviceConf.h"
 #include "Softtimer/softtime.h"
 #include "protocol/UDP/udp.h"
+#include "protocol/TCP/TCPClient.h"
 
 #endif /* PLATFORM_PLATFORM_H_ */

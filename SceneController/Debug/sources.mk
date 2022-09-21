@@ -13,10 +13,13 @@ OBJS :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
+App/CommandResolve \
 App/SensorCtrl \
 App \
+Common \
 Platform/AddXML \
 Platform/Softtimer \
 Platform/protocol/ModbusTCP \
+Platform/protocol/TCP \
 Platform/protocol/UDP \
 

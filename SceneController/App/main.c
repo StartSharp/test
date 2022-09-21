@@ -22,29 +22,28 @@ struct SoftVersionUnionType{
 
 struct SoftVersionUnionType g_softversion = {{2,2,3,4}};
 
-pthread_t deviceRun;
 pthread_t cmdRun;
-pthread_t sampleRun;
+
 int main(void)
 {
 	printf("--------------ScenenController software version %d.%d.%d.%d------------\r\n", g_softversion.bit.s1, g_softversion.bit.s2, g_softversion.bit.s3, g_softversion.bit.s4); /* prints !!!Hello World!!! */
 
+	CommandResolveInit();
 	/*初始化场景元素*/
-	SceneElementInit();
+	SceneElementCtrlRun();
 	SceneElementSamplerInit();
 	/*与平台建立连接*/
-
+	TransactionRun();
 	/*启动线程 自检线程 场景元素报备 场景元素命令解析*/
 
 	printf("Initial Scene Element\r\n");
 	SceneElementReset(RESET_ALL, 0);
 
-	pthread_create(&deviceRun, NULL, DeviceCtrlRunDamon, NULL);
+
 	pthread_create(&cmdRun, NULL, TempCtrl, NULL);
-	pthread_create(&sampleRun, NULL, DeviceCtrlSampleDamon, NULL);
 
 	while(1)
 	{
-		sleep(100);
+		sleep(5);
 	}
 }

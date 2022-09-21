@@ -8,8 +8,8 @@
 #ifndef PLATFORM_PROTOCOL_MODBUSTCP_MODBUSTCPOPS_H_
 #define PLATFORM_PROTOCOL_MODBUSTCP_MODBUSTCPOPS_H_
 
+#include <commontypes.h>
 #include "modbus.h"
-#include "common.h"
 
 struct ModbusTCPConfType{
 	char ip[20];

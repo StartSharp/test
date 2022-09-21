@@ -105,7 +105,7 @@ void CloseModbusDevice(uint16_t argc, void* argv)
  *     - RET_NO_ERR  成功
  *     - ohter       失败
  */
-STATUS_T OpenModbusDevice(void* ptr)
+STATUS_T OpenModbusDevice(void* ptr, UINT32 para)
 {
 	STATUS_T ret = RET_UNKNOWN_ERR;
 	struct DeviceCtrlType* pHandler = ptr;
@@ -116,6 +116,8 @@ STATUS_T OpenModbusDevice(void* ptr)
     	int result = ModbusTCPSetBit(pHandler->pdev, ((struct ModbusTCPConfType*)pHandler->proConf)->addr , 1);
     	if(-1 != result)
     		ret = RET_NO_ERR;
+    	else
+    		ret = RET_NOCONN_ERR;
     }
     else
     {
@@ -133,7 +135,7 @@ STATUS_T OpenModbusDevice(void* ptr)
  *     - RET_NO_ERR  成功
  *     - ohter       失败
  */
-STATUS_T DeviceCtrl(struct DeviceCtrlType* pdevice)
+STATUS_T DeviceCtrl(struct DeviceCtrlType* pdevice, UINT32 para)
 {
 	STATUS_T ret = RET_UNKNOWN_ERR;
 
@@ -144,7 +146,7 @@ STATUS_T DeviceCtrl(struct DeviceCtrlType* pdevice)
 			/*启动定时器*/
 			softTimer_Start(&pdevice->timer, SOFTTIMER_MODE_ONE_SHOT, pdevice->holdtime, pdevice->close, 1, pdevice);
 		}
-		ret = pdevice->open(pdevice);
+		ret = pdevice->open(pdevice, para);
 	}
 	else
 	{

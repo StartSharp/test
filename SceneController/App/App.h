@@ -10,5 +10,7 @@
 
 #include "SensorCtrl/DeviceCtrl.h"
 #include "SensorCtrl/SceneElement.h"
+#include "SensorCtrl/Transaction.h"
+#include "CommandResolve/CommandResolve.h"
 
 #endif /* APP_APP_H_ */
